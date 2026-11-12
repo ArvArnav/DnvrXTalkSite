@@ -120,21 +120,27 @@
         <!-- Control Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            <!-- Left Column: OTA Publisher & Download Counter Editor -->
+            <!-- Left Column: OTA Publisher, File Size (MB) & Stats Manager -->
             <div class="lg:col-span-6 space-y-8">
-                <!-- OTA Publisher -->
+                <!-- OTA Publisher & File Size Manager -->
                 <div class="glass-card p-8 rounded-3xl space-y-6">
                     <div class="border-b border-gray-800 pb-4">
                         <h3 class="text-xl font-bold text-white flex items-center gap-2">
-                            <span class="text-cyan-400 mono">></span> Publish Version OTA Info
+                            <span class="text-cyan-400 mono">></span> Publish Version & File Size (MB)
                         </h3>
-                        <p class="text-xs text-gray-400 mt-1">Update version metadata to trigger instant in-app updates.</p>
+                        <p class="text-xs text-gray-400 mt-1">Manage version metadata and APK file size displayed on website.</p>
                     </div>
 
                     <form id="apkUploadForm" onsubmit="publishUpdate(event)" class="space-y-4">
-                        <div>
-                            <label class="block text-xs text-gray-400 mono mb-2">Version Name (e.g. 1.0.2)</label>
-                            <input type="text" id="versionNameInput" required class="w-full px-4 py-3 rounded-xl bg-[#030508] border border-gray-800 text-white text-sm focus:border-cyan-500 focus:outline-none mono">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs text-gray-400 mono mb-2">Version Name</label>
+                                <input type="text" id="versionNameInput" required class="w-full px-4 py-3 rounded-xl bg-[#030508] border border-gray-800 text-white text-sm focus:border-cyan-500 focus:outline-none mono">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mono mb-2">APK File Size (MB)</label>
+                                <input type="text" id="fileSizeInput" required placeholder="e.g. 29 MB" class="w-full px-4 py-3 rounded-xl bg-[#030508] border border-gray-800 text-white text-sm focus:border-cyan-500 focus:outline-none mono">
+                            </div>
                         </div>
                         <div>
                             <label class="block text-xs text-gray-400 mono mb-2">Version Code (e.g. 2)</label>
@@ -145,7 +151,7 @@
                             <textarea id="releaseNotesInput" rows="3" required class="w-full px-4 py-3 rounded-xl bg-[#030508] border border-gray-800 text-white text-sm focus:border-cyan-500 focus:outline-none"></textarea>
                         </div>
                         <button type="submit" class="w-full py-3.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold text-sm transition-all cyber-glow-btn">
-                            Push OTA Update to Firestore
+                            Push OTA Update & File Size
                         </button>
                     </form>
                 </div>
@@ -184,20 +190,20 @@
                 </div>
             </div>
 
-            <!-- Right Column: Admin Review & Reply Management -->
+            <!-- Right Column: Admin Review & Multiple Replies Management -->
             <div class="lg:col-span-6 glass-card p-8 rounded-3xl space-y-6">
                 <div class="border-b border-gray-800 pb-4 flex justify-between items-center">
                     <div>
                         <h3 class="text-xl font-bold text-white flex items-center gap-2">
-                            <span class="text-cyan-400 mono">></span> Moderate & Reply Reviews
+                            <span class="text-cyan-400 mono">></span> Moderate & Multiple Replies
                         </h3>
-                        <p class="text-xs text-gray-400 mt-1">Manage feedback and send official developer replies.</p>
+                        <p class="text-xs text-gray-400 mt-1">Manage feedback and send multiple developer replies.</p>
                     </div>
                     <span class="px-2.5 py-1 rounded-lg bg-yellow-500/10 text-yellow-400 text-xs mono border border-yellow-500/20">Live Feed</span>
                 </div>
 
-                <div class="space-y-4 max-h-[650px] overflow-y-auto pr-2" id="adminReviewsList">
-                    <!-- Dynamic reviews and reply boxes load here -->
+                <div class="space-y-4 max-h-[750px] overflow-y-auto pr-2" id="adminReviewsList">
+                    <!-- Dynamic reviews and multiple reply boxes load here -->
                 </div>
             </div>
 
@@ -213,7 +219,7 @@
     <!-- Firebase Auth & Admin Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBTADMW2s0osWg79iB28K-jWow5vU_8Itc",
@@ -307,6 +313,9 @@
                     document.getElementById('versionNameInput').value = data.versionName;
                     document.getElementById('versionCodeInput').value = data.versionCode;
                     document.getElementById('releaseNotesInput').value = data.releaseNotes;
+                    document.getElementById('fileSizeInput').value = data.fileSize || "29 MB";
+                } else {
+                    document.getElementById('fileSizeInput').value = "29 MB";
                 }
 
                 const adminSnap = await getDoc(doc(db, "admin", "credentials"));
@@ -347,7 +356,7 @@
                     username: newUser,
                     password: newPass
                 });
-                alert("Admin credentials updated successfully! Use these next time you log in.");
+                alert("Admin credentials updated successfully!");
                 document.getElementById('newPasswordInput').value = "";
             } catch (e) {
                 alert("Error updating credentials: " + e.message);
@@ -359,15 +368,17 @@
             const vName = document.getElementById('versionNameInput').value;
             const vCode = parseInt(document.getElementById('versionCodeInput').value);
             const notes = document.getElementById('releaseNotesInput').value;
+            const fSize = document.getElementById('fileSizeInput').value;
 
             try {
                 await setDoc(doc(db, "metadata", "appVersion"), {
                     versionName: vName,
                     versionCode: vCode,
                     releaseNotes: notes,
+                    fileSize: fSize,
                     updatedAt: new Date()
                 });
-                alert(`Success! Version v${vName} (Code: ${vCode}) pushed to Firestore.`);
+                alert(`Success! Version v${vName} (${fSize}) pushed to Firestore.`);
                 loadAdminStats();
             } catch (e) {
                 alert("Error pushing update: " + e.message);
@@ -394,12 +405,26 @@
                     const item = document.createElement('div');
                     item.className = 'p-5 rounded-2xl bg-[#030508] border border-gray-800 space-y-3';
                     
-                    let replyHtml = rev.adminReply ? `
-                        <div class="mt-2 p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/30 text-xs space-y-1">
-                            <p class="text-cyan-400 font-semibold mono">↳ Official Reply by Arnav:</p>
-                            <p class="text-gray-300">"${escapeHtml(rev.adminReply)}"</p>
-                        </div>
-                    ` : '';
+                    let repliesHtml = '';
+                    if (rev.replies && Array.isArray(rev.replies) && rev.replies.length > 0) {
+                        rev.replies.forEach((rep, index) => {
+                            repliesHtml += `
+                                <div class="mt-2 p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/30 text-xs space-y-1 relative group">
+                                    <p class="text-cyan-400 font-semibold mono">↳ Reply #${index + 1} by Arnav:</p>
+                                    <p class="text-gray-300">"${escapeHtml(rep)}"</p>
+                                    <button onclick="deleteReply('${id}', ${index})" class="absolute top-2 right-2 text-[10px] text-red-400 hover:underline">Delete</button>
+                                </div>
+                            `;
+                        });
+                    } else if (rev.adminReply) {
+                        // Backward compatibility for old single reply
+                        repliesHtml += `
+                            <div class="mt-2 p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/30 text-xs space-y-1">
+                                <p class="text-cyan-400 font-semibold mono">↳ Official Reply by Arnav:</p>
+                                <p class="text-gray-300">"${escapeHtml(rev.adminReply)}"</p>
+                            </div>
+                        `;
+                    }
 
                     item.innerHTML = `
                         <div class="flex justify-between items-center text-xs">
@@ -407,11 +432,11 @@
                             <span class="text-yellow-400">${rev.rating}</span>
                         </div>
                         <p class="text-gray-300 text-xs">"${escapeHtml(rev.text)}"</p>
-                        ${replyHtml}
+                        <div class="space-y-1">${repliesHtml}</div>
                         <div class="pt-2 border-t border-gray-900 space-y-2">
                             <div class="flex gap-2">
-                                <input type="text" id="replyInput_${id}" placeholder="Type developer reply..." value="${rev.adminReply || ''}" class="flex-grow px-3 py-2 rounded-xl bg-[#05070a] border border-gray-800 text-white text-xs focus:border-cyan-500 focus:outline-none mono">
-                                <button onclick="sendReply('${id}')" class="px-3 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs mono">Send</button>
+                                <input type="text" id="replyInput_${id}" placeholder="Type another developer reply..." class="flex-grow px-3 py-2 rounded-xl bg-[#05070a] border border-gray-800 text-white text-xs focus:border-cyan-500 focus:outline-none mono">
+                                <button onclick="sendReply('${id}')" class="px-3 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs mono">Add Reply</button>
                             </div>
                             <div class="flex justify-between items-center text-[10px] text-gray-500 mono pt-1">
                                 <span>ID: ${id.substring(0,6)}...</span>
@@ -427,15 +452,33 @@
         }
 
         window.sendReply = async function(id) {
-            const replyText = document.getElementById(`replyInput_${id}`).value;
+            const replyText = document.getElementById(`replyInput_${id}`).value.trim();
+            if(!replyText) return;
             try {
                 await updateDoc(doc(db, "reviews", id), {
-                    adminReply: replyText
+                    replies: arrayUnion(replyText)
                 });
-                alert("Reply saved successfully!");
+                alert("Reply added successfully!");
                 loadAdminReviews();
             } catch (e) {
                 alert("Error sending reply: " + e.message);
+            }
+        };
+
+        window.deleteReply = async function(id, index) {
+            if(confirm("Delete this specific reply?")) {
+                try {
+                    const docRef = doc(db, "reviews", id);
+                    const docSnap = await getDoc(docRef);
+                    if(docSnap.exists()) {
+                        let replies = docSnap.data().replies || [];
+                        replies.splice(index, 1);
+                        await updateDoc(docRef, { replies: replies });
+                        loadAdminReviews();
+                    }
+                } catch(e) {
+                    alert("Error deleting reply: " + e.message);
+                }
             }
         };
 
