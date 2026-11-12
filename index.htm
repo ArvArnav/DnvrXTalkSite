@@ -225,9 +225,9 @@
                     </form>
                 </div>
 
-                <!-- Reviews Feed Container with Developer Replies -->
+                <!-- Reviews Feed Container with Multiple Developer Replies -->
                 <div class="lg:col-span-7 space-y-4" id="reviewsContainer">
-                    <!-- Real-time Firestore reviews and admin replies load here -->
+                    <!-- Real-time Firestore reviews and multiple admin replies load here -->
                 </div>
             </div>
         </section>
@@ -256,7 +256,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Fetch Live Metadata and Downloads Count (Default to 100 if fresh)
+        // Fetch Live Metadata, File Size (MB) and Downloads Count
         async function fetchAppData() {
             try {
                 const metaSnap = await getDoc(doc(db, "metadata", "appVersion"));
@@ -264,6 +264,10 @@
                     const data = metaSnap.data();
                     document.getElementById('navVersionTag').innerText = `v${data.versionName}`;
                     document.getElementById('releaseTitle').innerText = `Dnvr X Talk v${data.versionName}`;
+                    
+                    const apkSize = data.fileSize || "29 MB";
+                    document.getElementById('downloadBtnText').innerText = `Download Android APK (${apkSize})`;
+
                     if(data.releaseNotes) {
                         const notesList = document.getElementById('releaseNotesList');
                         notesList.innerHTML = `<li class="flex items-center gap-2"><span class="text-cyan-400">▹</span> ${escapeHtml(data.releaseNotes)}</li>`;
@@ -285,7 +289,7 @@
         }
         fetchAppData();
 
-        // Clean In-Button Download Animation & Real-time Counter Increment
+        // In-Button Download Animation & Real-time Counter Increment
         window.triggerDownload = async function() {
             const btnText = document.getElementById('downloadBtnText');
             btnText.innerText = "Your download is starting...";
@@ -302,7 +306,9 @@
             }
 
             setTimeout(() => {
-                btnText.innerText = "Download Android APK (29 MB)";
+                const currentSize = document.getElementById('downloadBtnText').innerText.match(/\(.*?\)/);
+                const sizeText = currentSize ? currentSize[0] : "(29 MB)";
+                btnText.innerText = `Download Android APK ${sizeText}`;
                 window.location.href = "https://github.com/ArvArnav/DnvrXTalkSite/releases/latest/download/dnvr-talk.apk";
             }, 2000);
         };
@@ -337,7 +343,7 @@
             }
         };
 
-        // Load Reviews Live with Developer Replies
+        // Load Reviews Live with Multiple Developer Replies Support
         async function loadReviews() {
             const container = document.getElementById('reviewsContainer');
             container.innerHTML = '<p class="text-xs text-gray-500 mono">Syncing reviews from cloud database...</p>';
@@ -356,12 +362,24 @@
                     const card = document.createElement('div');
                     card.className = 'glass-card p-6 rounded-2xl space-y-3';
                     
-                    let replyHtml = rev.adminReply ? `
-                        <div class="mt-3 p-3.5 rounded-xl bg-cyan-950/30 border border-cyan-500/30 text-xs space-y-1">
-                            <p class="text-cyan-400 font-bold mono">↳ Official Reply by Arnav (Developer):</p>
-                            <p class="text-gray-300">"${escapeHtml(rev.adminReply)}"</p>
-                        </div>
-                    ` : '';
+                    let repliesHtml = '';
+                    if (rev.replies && Array.isArray(rev.replies)) {
+                        rev.replies.forEach((rep) => {
+                            repliesHtml += `
+                                <div class="mt-3 p-3.5 rounded-xl bg-cyan-950/30 border border-cyan-500/30 text-xs space-y-1">
+                                    <p class="text-cyan-400 font-bold mono">↳ Official Reply by Arnav (Developer):</p>
+                                    <p class="text-gray-300">"${escapeHtml(rep)}"</p>
+                                </div>
+                            `;
+                        });
+                    } else if (rev.adminReply) {
+                        repliesHtml += `
+                            <div class="mt-3 p-3.5 rounded-xl bg-cyan-950/30 border border-cyan-500/30 text-xs space-y-1">
+                                <p class="text-cyan-400 font-bold mono">↳ Official Reply by Arnav (Developer):</p>
+                                <p class="text-gray-300">"${escapeHtml(rev.adminReply)}"</p>
+                            </div>
+                        `;
+                    }
 
                     card.innerHTML = `
                         <div class="flex justify-between items-center">
@@ -369,7 +387,7 @@
                             <span class="text-yellow-400 text-xs">${rev.rating}</span>
                         </div>
                         <p class="text-gray-300 text-sm">"${escapeHtml(rev.text)}"</p>
-                        ${replyHtml}
+                        ${repliesHtml}
                         <p class="text-[10px] text-gray-500 mono pt-1 border-t border-gray-800/60">Verified Tester • Live Firestore Sync</p>
                     `;
                     container.appendChild(card);
