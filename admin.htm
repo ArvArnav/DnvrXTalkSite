@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dnvr X Talk | Secure Admin Matrix & Replies</title>
+    <title>Dnvr X Talk | Secure Admin Matrix & Control</title>
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="favicon.ico">
     <!-- Tailwind CSS -->
@@ -42,7 +42,7 @@
 </head>
 <body class="min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-black relative scanline">
 
-    <!-- PASSWORD LOCK SCREEN OVERLAY -->
+    <!-- USERNAME & PASSWORD AUTHENTICATION MODAL -->
     <div id="authModal" class="fixed inset-0 z-50 bg-[#030508]/95 backdrop-blur-3xl flex items-center justify-center p-6 transition-all duration-500">
         <div class="glass-card max-w-md w-full p-8 rounded-3xl space-y-6 text-center cyber-glow relative overflow-hidden">
             <div class="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/40 flex items-center justify-center mx-auto text-cyan-400 text-2xl shadow-inner animate-bounce">
@@ -53,14 +53,18 @@
                 <p class="text-xs text-cyan-400 mono">Cloud Firestore Authentication</p>
             </div>
             
-            <form onsubmit="verifyFirebasePassword(event)" class="space-y-4">
-                <input type="password" id="adminPasswordInput" required placeholder="Enter Cloud Password..." class="w-full px-4 py-3.5 rounded-xl bg-[#030508] border border-gray-800 text-white text-sm text-center focus:border-cyan-500 focus:outline-none mono transition-all shadow-inner">
+            <form onsubmit="verifyFirebaseCredentials(event)" class="space-y-4">
+                <div>
+                    <input type="text" id="adminUsernameInput" required placeholder="Admin Username" class="w-full px-4 py-3.5 rounded-xl bg-[#030508] border border-gray-800 text-white text-sm text-center focus:border-cyan-500 focus:outline-none mono transition-all shadow-inner">
+                </div>
+                <div>
+                    <input type="password" id="adminPasswordInput" required placeholder="Admin Password" class="w-full px-4 py-3.5 rounded-xl bg-[#030508] border border-gray-800 text-white text-sm text-center focus:border-cyan-500 focus:outline-none mono transition-all shadow-inner">
+                </div>
                 <button type="submit" id="authBtn" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-black font-extrabold text-sm transition-all cyber-glow-btn mono">
                     Authorize Matrix Access
                 </button>
             </form>
-            <p id="authError" class="text-xs text-red-400 mono hidden bg-red-500/10 py-2 rounded-lg border border-red-500/20">Access Denied: Incorrect Password!</p>
-            <p class="text-[10px] text-gray-500 mono">Default password (fresh DB): <span class="text-cyan-400">arnav123</span></p>
+            <p id="authError" class="text-xs text-red-400 mono hidden bg-red-500/10 py-2 rounded-lg border border-red-500/20">Access Denied: Invalid Username or Password!</p>
         </div>
     </div>
 
@@ -83,7 +87,7 @@
                     Developer: Arnav
                 </span>
                 <a href="index.html" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-white text-xs mono transition-all border border-gray-700">
-                    ← Back to Releases Hub
+                    ← Back to Vault
                 </a>
             </div>
         </div>
@@ -95,14 +99,14 @@
         <!-- Stats Overview Row -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="glass-card p-6 rounded-3xl space-y-2 relative overflow-hidden">
-                <p class="text-xs text-gray-400 mono uppercase tracking-wider">Total Download Button Clicks</p>
+                <p class="text-xs text-gray-400 mono uppercase tracking-wider">Total Downloads Count</p>
                 <h3 class="text-4xl font-extrabold text-cyan-400 mono" id="totalDownloadsCount">Loading...</h3>
                 <p class="text-xs text-emerald-400 mono">↑ Live click counter synced</p>
             </div>
 
             <div class="glass-card p-6 rounded-3xl space-y-2 relative overflow-hidden">
                 <p class="text-xs text-gray-400 mono uppercase tracking-wider">Live App Version</p>
-                <h3 class="text-4xl font-extrabold text-white mono" id="liveVersionDisplay">v1.0.0</h3>
+                <h3 class="text-4xl font-extrabold text-white mono" id="liveVersionDisplay">v1.0.1</h3>
                 <p class="text-xs text-purple-400 mono">OTA Pipeline: Active</p>
             </div>
 
@@ -116,35 +120,71 @@
         <!-- Control Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            <!-- Left: OTA Publisher -->
-            <div class="lg:col-span-6 glass-card p-8 rounded-3xl space-y-6">
-                <div class="border-b border-gray-800 pb-4">
-                    <h3 class="text-xl font-bold text-white flex items-center gap-2">
-                        <span class="text-cyan-400 mono">></span> Publish Version OTA Info
-                    </h3>
-                    <p class="text-xs text-gray-400 mt-1">Update version metadata to trigger instant in-app updates for users.</p>
+            <!-- Left Column: OTA Publisher & Download Counter Editor -->
+            <div class="lg:col-span-6 space-y-8">
+                <!-- OTA Publisher -->
+                <div class="glass-card p-8 rounded-3xl space-y-6">
+                    <div class="border-b border-gray-800 pb-4">
+                        <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                            <span class="text-cyan-400 mono">></span> Publish Version OTA Info
+                        </h3>
+                        <p class="text-xs text-gray-400 mt-1">Update version metadata to trigger instant in-app updates.</p>
+                    </div>
+
+                    <form id="apkUploadForm" onsubmit="publishUpdate(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs text-gray-400 mono mb-2">Version Name (e.g. 1.0.2)</label>
+                            <input type="text" id="versionNameInput" required class="w-full px-4 py-3 rounded-xl bg-[#030508] border border-gray-800 text-white text-sm focus:border-cyan-500 focus:outline-none mono">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mono mb-2">Version Code (e.g. 2)</label>
+                            <input type="number" id="versionCodeInput" required class="w-full px-4 py-3 rounded-xl bg-[#030508] border border-gray-800 text-white text-sm focus:border-cyan-500 focus:outline-none mono">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mono mb-2">Release Notes / What's New</label>
+                            <textarea id="releaseNotesInput" rows="3" required class="w-full px-4 py-3 rounded-xl bg-[#030508] border border-gray-800 text-white text-sm focus:border-cyan-500 focus:outline-none"></textarea>
+                        </div>
+                        <button type="submit" class="w-full py-3.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold text-sm transition-all cyber-glow-btn">
+                            Push OTA Update to Firestore
+                        </button>
+                    </form>
                 </div>
 
-                <form id="apkUploadForm" onsubmit="publishUpdate(event)" class="space-y-4">
-                    <div>
-                        <label class="block text-xs text-gray-400 mono mb-2">Version Name (e.g. 1.1.0)</label>
-                        <input type="text" id="versionNameInput" required value="1.0.0" class="w-full px-4 py-3 rounded-xl bg-[#030508] border border-gray-800 text-white text-sm focus:border-cyan-500 focus:outline-none mono">
+                <!-- Download Counter & Credentials Manager -->
+                <div class="glass-card p-8 rounded-3xl space-y-6">
+                    <div class="border-b border-gray-800 pb-4">
+                        <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                            <span class="text-cyan-400 mono">></span> Manage Stats & Security
+                        </h3>
+                        <p class="text-xs text-gray-400 mt-1">Manually update download counts or change admin login credentials.</p>
                     </div>
-                    <div>
-                        <label class="block text-xs text-gray-400 mono mb-2">Version Code (e.g. 2)</label>
-                        <input type="number" id="versionCodeInput" required value="1" class="w-full px-4 py-3 rounded-xl bg-[#030508] border border-gray-800 text-white text-sm focus:border-cyan-500 focus:outline-none mono">
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs text-gray-400 mono mb-2">Edit Total Downloads Count</label>
+                            <div class="flex gap-3">
+                                <input type="number" id="manualDownloadCountInput" class="flex-grow px-4 py-3 rounded-xl bg-[#030508] border border-gray-800 text-white text-sm focus:border-cyan-500 focus:outline-none mono">
+                                <button onclick="updateManualDownloads()" class="px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs mono">Update Count</button>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t border-gray-800 space-y-4">
+                            <h4 class="text-xs text-cyan-400 mono uppercase tracking-wider">Change Admin Credentials</h4>
+                            <div>
+                                <label class="block text-xs text-gray-400 mono mb-1">New Admin Username</label>
+                                <input type="text" id="newUsernameInput" class="w-full px-4 py-2.5 rounded-xl bg-[#030508] border border-gray-800 text-white text-sm focus:border-cyan-500 focus:outline-none mono">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mono mb-1">New Admin Password</label>
+                                <input type="password" id="newPasswordInput" class="w-full px-4 py-2.5 rounded-xl bg-[#030508] border border-gray-800 text-white text-sm focus:border-cyan-500 focus:outline-none mono">
+                            </div>
+                            <button onclick="updateCredentials()" class="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs mono">Save New Credentials to Cloud</button>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-xs text-gray-400 mono mb-2">Release Notes / What's New</label>
-                        <textarea id="releaseNotesInput" rows="3" required class="w-full px-4 py-3 rounded-xl bg-[#030508] border border-gray-800 text-white text-sm focus:border-cyan-500 focus:outline-none">Bug fixes, optimized chat performance, and enhanced encryption speed.</textarea>
-                    </div>
-                    <button type="submit" class="w-full py-3.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold text-sm transition-all cyber-glow-btn">
-                        Push OTA Update to Firestore
-                    </button>
-                </form>
+                </div>
             </div>
 
-            <!-- Right: Admin Review & Reply Management -->
+            <!-- Right Column: Admin Review & Reply Management -->
             <div class="lg:col-span-6 glass-card p-8 rounded-3xl space-y-6">
                 <div class="border-b border-gray-800 pb-4 flex justify-between items-center">
                     <div>
@@ -156,7 +196,7 @@
                     <span class="px-2.5 py-1 rounded-lg bg-yellow-500/10 text-yellow-400 text-xs mono border border-yellow-500/20">Live Feed</span>
                 </div>
 
-                <div class="space-y-4 max-h-[500px] overflow-y-auto pr-2" id="adminReviewsList">
+                <div class="space-y-4 max-h-[650px] overflow-y-auto pr-2" id="adminReviewsList">
                     <!-- Dynamic reviews and reply boxes load here -->
                 </div>
             </div>
@@ -195,10 +235,11 @@
             loadAdminReviews();
         }
 
-        // Verify and Auto-Create Password Document in Firestore
-        window.verifyFirebasePassword = async function(event) {
+        // Verify Firebase Credentials (Username & Password)
+        window.verifyFirebaseCredentials = async function(event) {
             event.preventDefault();
-            const inputVal = document.getElementById('adminPasswordInput').value;
+            const inputUser = document.getElementById('adminUsernameInput').value.trim();
+            const inputPass = document.getElementById('adminPasswordInput').value;
             const errorText = document.getElementById('authError');
             const authBtn = document.getElementById('authBtn');
 
@@ -209,15 +250,17 @@
                 const adminDocRef = doc(db, "admin", "credentials");
                 const adminSnap = await getDoc(adminDocRef);
 
-                let correctPassword = "arnav123";
+                let correctUser = "arnav";
+                let correctPass = "arnav123";
 
                 if (adminSnap.exists()) {
-                    correctPassword = adminSnap.data().password;
+                    correctUser = adminSnap.data().username || "arnav";
+                    correctPass = adminSnap.data().password || "arnav123";
                 } else {
-                    await setDoc(adminDocRef, { password: "arnav123", username: "arnav" });
+                    await setDoc(adminDocRef, { username: "arnav", password: "arnav123" });
                 }
 
-                if (inputVal === correctPassword) {
+                if (inputUser === correctUser && inputPass === correctPass) {
                     const modal = document.getElementById('authModal');
                     modal.style.opacity = '0';
                     setTimeout(() => modal.classList.add('hidden'), 400);
@@ -230,7 +273,7 @@
                 }
             } catch (e) {
                 console.error("Auth error:", e);
-                if (inputVal === "arnav123") {
+                if (inputUser === "arnav" && inputPass === "arnav123") {
                     const modal = document.getElementById('authModal');
                     modal.style.opacity = '0';
                     setTimeout(() => modal.classList.add('hidden'), 400);
@@ -248,10 +291,13 @@
             try {
                 const statsDoc = await getDoc(doc(db, "stats", "downloads"));
                 if (statsDoc.exists()) {
-                    document.getElementById('totalDownloadsCount').innerText = statsDoc.data().count || 0;
+                    const countVal = statsDoc.data().count || 100;
+                    document.getElementById('totalDownloadsCount').innerText = countVal;
+                    document.getElementById('manualDownloadCountInput').value = countVal;
                 } else {
-                    await setDoc(doc(db, "stats", "downloads"), { count: 1428 });
-                    document.getElementById('totalDownloadsCount').innerText = "1,428";
+                    await setDoc(doc(db, "stats", "downloads"), { count: 100 });
+                    document.getElementById('totalDownloadsCount').innerText = "100";
+                    document.getElementById('manualDownloadCountInput').value = 100;
                 }
 
                 const metaDoc = await getDoc(doc(db, "metadata", "appVersion"));
@@ -262,10 +308,51 @@
                     document.getElementById('versionCodeInput').value = data.versionCode;
                     document.getElementById('releaseNotesInput').value = data.releaseNotes;
                 }
+
+                const adminSnap = await getDoc(doc(db, "admin", "credentials"));
+                if(adminSnap.exists()) {
+                    document.getElementById('newUsernameInput').value = adminSnap.data().username || "arnav";
+                }
             } catch (e) {
                 console.log("Error loading stats:", e);
             }
         }
+
+        window.updateManualDownloads = async function() {
+            const newVal = parseInt(document.getElementById('manualDownloadCountInput').value);
+            if (isNaN(newVal)) {
+                alert("Please enter a valid number!");
+                return;
+            }
+            try {
+                await updateDoc(doc(db, "stats", "downloads"), { count: newVal });
+                alert("Download count updated successfully!");
+                loadAdminStats();
+            } catch (e) {
+                alert("Error updating count: " + e.message);
+            }
+        };
+
+        window.updateCredentials = async function() {
+            const newUser = document.getElementById('newUsernameInput').value.trim();
+            const newPass = document.getElementById('newPasswordInput').value;
+
+            if (!newUser || !newPass) {
+                alert("Username and password cannot be empty!");
+                return;
+            }
+
+            try {
+                await setDoc(doc(db, "admin", "credentials"), {
+                    username: newUser,
+                    password: newPass
+                });
+                alert("Admin credentials updated successfully! Use these next time you log in.");
+                document.getElementById('newPasswordInput').value = "";
+            } catch (e) {
+                alert("Error updating credentials: " + e.message);
+            }
+        };
 
         window.publishUpdate = async function(event) {
             event.preventDefault();
