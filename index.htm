@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dnvr X Talk | Official Releases Hub</title>
-    <!-- Official Favicon -->
+    <title>Dnvr X Talk | Secure Admin Matrix & Replies</title>
+    <!-- Favicon -->
     <link rel="icon" type="image/png" href="favicon.ico">
     <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
@@ -12,26 +12,18 @@
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #030508; color: #f3f4f6; overflow-x: hidden; }
         .mono { font-family: 'JetBrains Mono', monospace; }
-        .cyber-glow { box-shadow: 0 0 60px rgba(0, 242, 254, 0.15); }
-        .cyber-glow-btn { box-shadow: 0 0 35px rgba(0, 242, 254, 0.4); }
-        .terminal-box { background: rgba(8, 11, 16, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(0, 242, 254, 0.25); }
-        
-        @keyframes pulseGlow {
-            0%, 100% { opacity: 0.15; transform: scale(1); }
-            50% { opacity: 0.35; transform: scale(1.08); }
-        }
-        .animate-glow { animation: pulseGlow 8s ease-in-out infinite; }
+        .cyber-glow { box-shadow: 0 0 50px rgba(0, 242, 254, 0.2); }
+        .cyber-glow-btn { box-shadow: 0 0 30px rgba(0, 242, 254, 0.4); }
         
         .glass-card {
-            background: rgba(10, 14, 22, 0.8);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(0, 242, 254, 0.15);
+            background: rgba(10, 14, 22, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 242, 254, 0.25);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .glass-card:hover {
             border-color: rgba(0, 242, 254, 0.6);
-            transform: translateY(-4px);
-            box-shadow: 0 15px 35px -10px rgba(0, 242, 254, 0.3);
+            box-shadow: 0 10px 40px -10px rgba(0, 242, 254, 0.3);
         }
 
         @keyframes scanline {
@@ -43,154 +35,145 @@
             position: absolute;
             top: 0; left: 0; right: 0; height: 3px;
             background: linear-gradient(to bottom, transparent, rgba(0, 242, 254, 0.4), transparent);
-            animation: scanline 5s linear infinite;
+            animation: scanline 4s linear infinite;
             pointer-events: none;
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-black relative scanline">
 
-    <!-- Top Minimal Navigation Bar (Top Download Button Removed) -->
-    <header class="border-b border-gray-800/60 bg-[#030508]/85 backdrop-blur-2xl sticky top-0 z-50 transition-all">
+    <!-- PASSWORD LOCK SCREEN OVERLAY -->
+    <div id="authModal" class="fixed inset-0 z-50 bg-[#030508]/95 backdrop-blur-3xl flex items-center justify-center p-6 transition-all duration-500">
+        <div class="glass-card max-w-md w-full p-8 rounded-3xl space-y-6 text-center cyber-glow relative overflow-hidden">
+            <div class="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/40 flex items-center justify-center mx-auto text-cyan-400 text-2xl shadow-inner animate-bounce">
+                🔐
+            </div>
+            <div class="space-y-2">
+                <h2 class="text-2xl font-extrabold text-white tracking-wider mono">SECURE ADMIN MATRIX</h2>
+                <p class="text-xs text-cyan-400 mono">Cloud Firestore Authentication</p>
+            </div>
+            
+            <form onsubmit="verifyFirebasePassword(event)" class="space-y-4">
+                <input type="password" id="adminPasswordInput" required placeholder="Enter Cloud Password..." class="w-full px-4 py-3.5 rounded-xl bg-[#030508] border border-gray-800 text-white text-sm text-center focus:border-cyan-500 focus:outline-none mono transition-all shadow-inner">
+                <button type="submit" id="authBtn" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-black font-extrabold text-sm transition-all cyber-glow-btn mono">
+                    Authorize Matrix Access
+                </button>
+            </form>
+            <p id="authError" class="text-xs text-red-400 mono hidden bg-red-500/10 py-2 rounded-lg border border-red-500/20">Access Denied: Incorrect Password!</p>
+            <p class="text-[10px] text-gray-500 mono">Default password (fresh DB): <span class="text-cyan-400">arnav123</span></p>
+        </div>
+    </div>
+
+    <!-- Top Navigation -->
+    <header class="border-b border-gray-800/60 bg-[#030508]/90 backdrop-blur-xl sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="w-11 h-11 rounded-2xl overflow-hidden border border-cyan-500/40 cyber-glow bg-[#111318] transition-transform duration-300 hover:scale-105">
+                <div class="w-11 h-11 rounded-2xl overflow-hidden border border-cyan-500/40 cyber-glow bg-[#111318]">
                     <img src="https://i.ibb.co/pBs75Y1L/dnvr-x-talk-512x512.png" alt="Logo" class="w-full h-full object-cover">
                 </div>
                 <div>
-                    <h1 class="font-extrabold tracking-wider text-white text-base md:text-lg mono flex items-center gap-2">
-                        DNVR X TALK <span class="px-2 py-0.5 rounded text-[10px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-semibold" id="navVersionTag">v1.0.0</span>
+                    <h1 class="font-extrabold tracking-wider text-white text-base mono flex items-center gap-2">
+                        DNVR ADMIN MATRIX <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
                     </h1>
-                    <p class="text-xs text-cyan-400 mono tracking-widest">dnvrxtalk.site/releases</p>
+                    <p class="text-xs text-cyan-400 mono">secure_node // cloud_synced</p>
                 </div>
             </div>
-            <div class="flex items-center space-x-4">
-                <span class="inline-flex items-center px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs mono font-medium">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-2"></span> Releases Node Active
+            <div class="flex items-center space-x-3">
+                <span class="hidden sm:inline-flex px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs mono">
+                    Developer: Arnav
                 </span>
+                <a href="index.html" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-white text-xs mono transition-all border border-gray-700">
+                    ← Back to Releases Hub
+                </a>
             </div>
         </div>
     </header>
 
-    <!-- Main Content Area: Releases Hub Layout -->
-    <main class="flex-grow relative">
-        <div class="absolute top-20 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl -z-10 animate-glow"></div>
-        <div class="absolute top-96 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl -z-10 animate-glow" style="animation-delay: 3.5s;"></div>
-
-        <!-- Hero Releases Header -->
-        <section class="max-w-7xl mx-auto px-6 pt-16 pb-10">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-gray-800/80 pb-8">
-                <div class="space-y-2">
-                    <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs mono">
-                        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
-                        <span>Official Distribution Vault</span>
-                    </div>
-                    <h2 class="text-3xl md:text-5xl font-extrabold tracking-tight text-white">
-                        Dnvr X Talk <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">Releases</span>
-                    </h2>
-                    <p class="text-gray-400 text-sm md:text-base max-w-xl">
-                        Explore verified stable builds, release notes, and fast secure downloads for Android. Architected by Arnav.
-                    </p>
-                </div>
-                <div class="terminal-box px-6 py-4 rounded-2xl flex items-center space-x-4">
-                    <div class="w-3 h-3 rounded-full bg-emerald-400 animate-ping"></div>
-                    <div>
-                        <p class="text-xs text-gray-400 mono">Total Downloads Tracked</p>
-                        <p class="text-xl font-bold text-cyan-400 mono" id="heroDownloadCount">Loading...</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Latest / Stable Release Featured Card -->
-        <section class="max-w-7xl mx-auto px-6 py-6">
-            <div class="glass-card p-8 md:p-10 rounded-3xl relative overflow-hidden cyber-glow space-y-6">
-                <div class="absolute top-0 right-0 px-6 py-2 bg-gradient-to-l from-cyan-500 to-blue-600 text-black font-extrabold text-xs mono rounded-bl-2xl tracking-widest shadow-lg">
-                    LATEST STABLE BUILD
-                </div>
-
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div class="space-y-1">
-                        <div class="flex items-center space-x-3">
-                            <h3 class="text-2xl md:text-3xl font-extrabold text-white mono" id="releaseTitle">Dnvr X Talk v1.0.0</h3>
-                            <span class="px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs mono font-semibold">Production Ready</span>
-                        </div>
-                        <p class="text-xs text-gray-400 mono">Published via GitHub Releases • Verified SHA-256</p>
-                    </div>
-
-                    <!-- Direct Download Button inside Release Card -->
-                    <a href="https://github.com/ArvArnav/DnvrXTalkSite/releases/latest/download/dnvr-talk.apk" onclick="trackDownload()" class="flex items-center space-x-3 px-8 py-4 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold text-sm transition-all duration-300 cyber-glow-btn transform hover:-translate-y-1">
-                        <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                        <span>Download APK (48 MB)</span>
-                    </a>
-                </div>
-
-                <div class="border-t border-gray-800/80 pt-6 space-y-3">
-                    <h4 class="text-xs text-cyan-400 mono uppercase tracking-wider">What's New & Changelog</h4>
-                    <ul class="space-y-2 text-sm text-gray-300 font-medium" id="releaseNotesList">
-                        <li class="flex items-center gap-2"><span class="text-cyan-400">▹</span> Initial production release of Dnvr X Talk encrypted messenger.</li>
-                        <li class="flex items-center gap-2"><span class="text-cyan-400">▹</span> Fully integrated Firebase backend for instant OTA version checks.</li>
-                        <li class="flex items-center gap-2"><span class="text-cyan-400">▹</span> High-performance obsidian glassmorphism dark UI aesthetics.</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-
-        <!-- Interactive Reviews & Community Feedback Section -->
-        <section class="max-w-7xl mx-auto px-6 py-16">
-            <div class="text-center space-y-3 mb-12">
-                <h3 class="text-xs text-cyan-400 mono uppercase tracking-widest">Community Feedback</h3>
-                <h2 class="text-3xl font-extrabold text-white">User Reviews & Ratings</h2>
-                <p class="text-gray-400 text-sm">Leave your feedback or check what other testers say about this build.</p>
+    <!-- Main Admin Dashboard Content -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-6 py-10 space-y-8">
+        
+        <!-- Stats Overview Row -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="glass-card p-6 rounded-3xl space-y-2 relative overflow-hidden">
+                <p class="text-xs text-gray-400 mono uppercase tracking-wider">Total Download Button Clicks</p>
+                <h3 class="text-4xl font-extrabold text-cyan-400 mono" id="totalDownloadsCount">Loading...</h3>
+                <p class="text-xs text-emerald-400 mono">↑ Live click counter synced</p>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                <!-- Review Form -->
-                <div class="lg:col-span-5 glass-card p-8 rounded-3xl space-y-6">
+            <div class="glass-card p-6 rounded-3xl space-y-2 relative overflow-hidden">
+                <p class="text-xs text-gray-400 mono uppercase tracking-wider">Live App Version</p>
+                <h3 class="text-4xl font-extrabold text-white mono" id="liveVersionDisplay">v1.0.0</h3>
+                <p class="text-xs text-purple-400 mono">OTA Pipeline: Active</p>
+            </div>
+
+            <div class="glass-card p-6 rounded-3xl space-y-2 relative overflow-hidden">
+                <p class="text-xs text-gray-400 mono uppercase tracking-wider">Community Reviews</p>
+                <h3 class="text-4xl font-extrabold text-yellow-400 mono" id="totalReviewsCount">0</h3>
+                <p class="text-xs text-gray-400 mono">Stored in Firestore DB</p>
+            </div>
+        </div>
+
+        <!-- Control Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Left: OTA Publisher -->
+            <div class="lg:col-span-6 glass-card p-8 rounded-3xl space-y-6">
+                <div class="border-b border-gray-800 pb-4">
                     <h3 class="text-xl font-bold text-white flex items-center gap-2">
-                        <span class="text-cyan-400 mono">></span> Submit Feedback
+                        <span class="text-cyan-400 mono">></span> Publish Version OTA Info
                     </h3>
-                    <form id="reviewForm" class="space-y-4" onsubmit="submitReview(event)">
-                        <div>
-                            <label class="block text-xs text-gray-400 mono mb-2 font-semibold">Your Name / Handle</label>
-                            <input type="text" id="reviewerName" required placeholder="e.g. CyberNinja" class="w-full px-4 py-3 rounded-xl bg-[#030508] border border-gray-800 text-white text-sm focus:border-cyan-500 focus:outline-none transition-colors">
-                        </div>
-                        <div>
-                            <label class="block text-xs text-gray-400 mono mb-2 font-semibold">Rating Score</label>
-                            <select id="reviewRating" class="w-full px-4 py-3 rounded-xl bg-[#030508] border border-gray-800 text-white text-sm focus:border-cyan-500 focus:outline-none transition-colors">
-                                <option value="⭐⭐⭐⭐⭐">⭐⭐⭐⭐⭐ (5/5 - Outstanding)</option>
-                                <option value="⭐⭐⭐⭐">⭐⭐⭐⭐ (4/5 - Great)</option>
-                                <option value="⭐⭐⭐">⭐⭐⭐ (3/5 - Good)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs text-gray-400 mono mb-2 font-semibold">Review Message</label>
-                            <textarea id="reviewText" rows="3" required placeholder="Write your experience..." class="w-full px-4 py-3 rounded-xl bg-[#030508] border border-gray-800 text-white text-sm focus:border-cyan-500 focus:outline-none transition-colors"></textarea>
-                        </div>
-                        <button type="submit" id="submitReviewBtn" class="w-full py-3.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold text-sm transition-all cyber-glow-btn mono">
-                            Publish Review to Cloud
-                        </button>
-                    </form>
+                    <p class="text-xs text-gray-400 mt-1">Update version metadata to trigger instant in-app updates for users.</p>
                 </div>
 
-                <!-- Reviews Feed Container -->
-                <div class="lg:col-span-7 space-y-4" id="reviewsContainer">
-                    <!-- Real-time Firestore reviews load here -->
+                <form id="apkUploadForm" onsubmit="publishUpdate(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs text-gray-400 mono mb-2">Version Name (e.g. 1.1.0)</label>
+                        <input type="text" id="versionNameInput" required value="1.0.0" class="w-full px-4 py-3 rounded-xl bg-[#030508] border border-gray-800 text-white text-sm focus:border-cyan-500 focus:outline-none mono">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mono mb-2">Version Code (e.g. 2)</label>
+                        <input type="number" id="versionCodeInput" required value="1" class="w-full px-4 py-3 rounded-xl bg-[#030508] border border-gray-800 text-white text-sm focus:border-cyan-500 focus:outline-none mono">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mono mb-2">Release Notes / What's New</label>
+                        <textarea id="releaseNotesInput" rows="3" required class="w-full px-4 py-3 rounded-xl bg-[#030508] border border-gray-800 text-white text-sm focus:border-cyan-500 focus:outline-none">Bug fixes, optimized chat performance, and enhanced encryption speed.</textarea>
+                    </div>
+                    <button type="submit" class="w-full py-3.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold text-sm transition-all cyber-glow-btn">
+                        Push OTA Update to Firestore
+                    </button>
+                </form>
+            </div>
+
+            <!-- Right: Admin Review & Reply Management -->
+            <div class="lg:col-span-6 glass-card p-8 rounded-3xl space-y-6">
+                <div class="border-b border-gray-800 pb-4 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                            <span class="text-cyan-400 mono">></span> Moderate & Reply Reviews
+                        </h3>
+                        <p class="text-xs text-gray-400 mt-1">Manage feedback and send official developer replies.</p>
+                    </div>
+                    <span class="px-2.5 py-1 rounded-lg bg-yellow-500/10 text-yellow-400 text-xs mono border border-yellow-500/20">Live Feed</span>
+                </div>
+
+                <div class="space-y-4 max-h-[500px] overflow-y-auto pr-2" id="adminReviewsList">
+                    <!-- Dynamic reviews and reply boxes load here -->
                 </div>
             </div>
-        </section>
+
+        </div>
+
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-gray-800 bg-[#020305] py-8 text-center text-xs text-gray-500 mono space-y-2">
-        <p>&copy; 2026 Dnvr X Talk Releases Vault. Hosted securely on dnvrxtalk.site[cite: 2].</p>
-        <p class="text-cyan-400">Designed & Developed by <span class="text-white font-bold">Arnav</span> • Contact: <a href="mailto:denverdasff@gmail.com" class="text-gray-300 underline hover:text-cyan-400">denverdasff@gmail.com</a></p>
+    <footer class="border-t border-gray-800 bg-[#020305] py-6 text-center text-xs text-gray-500 mono">
+        <p>&copy; 2026 Dnvr X Talk Admin Matrix. Developed by Arnav • <a href="mailto:denverdasff@gmail.com" class="text-cyan-400 underline">denverdasff@gmail.com</a></p>
     </footer>
 
-    <!-- Firebase SDK & Script -->
+    <!-- Firebase Auth & Admin Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, getDoc, updateDoc, increment, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBTADMW2s0osWg79iB28K-jWow5vU_8Itc",
@@ -204,106 +187,182 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Fetch Live Metadata and Downloads Count
-        async function fetchAppData() {
+        // Session persistence check
+        if (sessionStorage.getItem('dnvr_admin_auth') === 'true') {
+            document.getElementById('authModal').style.opacity = '0';
+            setTimeout(() => document.getElementById('authModal').classList.add('hidden'), 400);
+            loadAdminStats();
+            loadAdminReviews();
+        }
+
+        // Verify and Auto-Create Password Document in Firestore
+        window.verifyFirebasePassword = async function(event) {
+            event.preventDefault();
+            const inputVal = document.getElementById('adminPasswordInput').value;
+            const errorText = document.getElementById('authError');
+            const authBtn = document.getElementById('authBtn');
+
+            authBtn.innerText = "Connecting to Cloud DB...";
+            errorText.classList.add('hidden');
+
             try {
-                const metaSnap = await getDoc(doc(db, "metadata", "appVersion"));
-                if (metaSnap.exists()) {
-                    const data = metaSnap.data();
-                    document.getElementById('navVersionTag').innerText = `v${data.versionName}`;
-                    document.getElementById('releaseTitle').innerText = `Dnvr X Talk v${data.versionName}`;
-                    if(data.releaseNotes) {
-                        const notesList = document.getElementById('releaseNotesList');
-                        notesList.innerHTML = `<li class="flex items-center gap-2"><span class="text-cyan-400">▹</span> ${escapeHtml(data.releaseNotes)}</li>`;
-                    }
+                const adminDocRef = doc(db, "admin", "credentials");
+                const adminSnap = await getDoc(adminDocRef);
+
+                let correctPassword = "arnav123";
+
+                if (adminSnap.exists()) {
+                    correctPassword = adminSnap.data().password;
+                } else {
+                    await setDoc(adminDocRef, { password: "arnav123", username: "arnav" });
                 }
 
-                const statsSnap = await getDoc(doc(db, "stats", "downloads"));
-                if (statsSnap.exists()) {
-                    document.getElementById('heroDownloadCount').innerText = statsSnap.data().count || 1428;
+                if (inputVal === correctPassword) {
+                    const modal = document.getElementById('authModal');
+                    modal.style.opacity = '0';
+                    setTimeout(() => modal.classList.add('hidden'), 400);
+                    sessionStorage.setItem('dnvr_admin_auth', 'true');
+                    loadAdminStats();
+                    loadAdminReviews();
                 } else {
-                    document.getElementById('heroDownloadCount').innerText = "1,428";
+                    errorText.classList.remove('hidden');
+                    authBtn.innerText = "Authorize Matrix Access";
                 }
             } catch (e) {
-                console.log("Data fetch error:", e);
-                document.getElementById('heroDownloadCount').innerText = "1,428";
+                console.error("Auth error:", e);
+                if (inputVal === "arnav123") {
+                    const modal = document.getElementById('authModal');
+                    modal.style.opacity = '0';
+                    setTimeout(() => modal.classList.add('hidden'), 400);
+                    sessionStorage.setItem('dnvr_admin_auth', 'true');
+                    loadAdminStats();
+                    loadAdminReviews();
+                } else {
+                    errorText.classList.remove('hidden');
+                    authBtn.innerText = "Authorize Matrix Access";
+                }
+            }
+        };
+
+        async function loadAdminStats() {
+            try {
+                const statsDoc = await getDoc(doc(db, "stats", "downloads"));
+                if (statsDoc.exists()) {
+                    document.getElementById('totalDownloadsCount').innerText = statsDoc.data().count || 0;
+                } else {
+                    await setDoc(doc(db, "stats", "downloads"), { count: 1428 });
+                    document.getElementById('totalDownloadsCount').innerText = "1,428";
+                }
+
+                const metaDoc = await getDoc(doc(db, "metadata", "appVersion"));
+                if (metaDoc.exists()) {
+                    const data = metaDoc.data();
+                    document.getElementById('liveVersionDisplay').innerText = `v${data.versionName}`;
+                    document.getElementById('versionNameInput').value = data.versionName;
+                    document.getElementById('versionCodeInput').value = data.versionCode;
+                    document.getElementById('releaseNotesInput').value = data.releaseNotes;
+                }
+            } catch (e) {
+                console.log("Error loading stats:", e);
             }
         }
-        fetchAppData();
 
-        // Track Download Counter
-        window.trackDownload = async function() {
-            try {
-                const statsRef = doc(db, "stats", "downloads");
-                await updateDoc(statsRef, { count: increment(1) });
-            } catch (e) {
-                console.log("Download count error:", e);
-            }
-        };
-
-        // Submit Review with Instant UI Update
-        window.submitReview = async function(event) {
+        window.publishUpdate = async function(event) {
             event.preventDefault();
-            const name = document.getElementById('reviewerName').value;
-            const rating = document.getElementById('reviewRating').value;
-            const text = document.getElementById('reviewText').value;
-            const btn = document.getElementById('submitReviewBtn');
-
-            btn.innerText = "Encrypting & Publishing...";
-            btn.disabled = true;
+            const vName = document.getElementById('versionNameInput').value;
+            const vCode = parseInt(document.getElementById('versionCodeInput').value);
+            const notes = document.getElementById('releaseNotesInput').value;
 
             try {
-                await addDoc(collection(db, "reviews"), {
-                    name: name,
-                    rating: rating,
-                    text: text,
-                    timestamp: new Date()
+                await setDoc(doc(db, "metadata", "appVersion"), {
+                    versionName: vName,
+                    versionCode: vCode,
+                    releaseNotes: notes,
+                    updatedAt: new Date()
                 });
-                
-                document.getElementById('reviewForm').reset();
-                btn.innerText = "Publish Review to Cloud";
-                btn.disabled = false;
-                loadReviews();
+                alert(`Success! Version v${vName} (Code: ${vCode}) pushed to Firestore.`);
+                loadAdminStats();
             } catch (e) {
-                alert("Error submitting review: " + e.message);
-                btn.innerText = "Publish Review to Cloud";
-                btn.disabled = false;
+                alert("Error pushing update: " + e.message);
             }
         };
 
-        // Load Reviews Live
-        async function loadReviews() {
-            const container = document.getElementById('reviewsContainer');
-            container.innerHTML = '<p class="text-xs text-gray-500 mono">Syncing reviews from cloud database...</p>';
+        async function loadAdminReviews() {
+            const listContainer = document.getElementById('adminReviewsList');
+            listContainer.innerHTML = '<p class="text-xs text-gray-500 mono">Loading reviews from cloud...</p>';
             try {
                 const q = query(collection(db, "reviews"), orderBy("timestamp", "desc"));
                 const querySnapshot = await getDocs(q);
-                container.innerHTML = "";
-                
+                listContainer.innerHTML = "";
+                document.getElementById('totalReviewsCount').innerText = querySnapshot.size;
+
                 if (querySnapshot.empty) {
-                    container.innerHTML = '<p class="text-xs text-gray-500 mono">No reviews yet. Be the first to leave feedback!</p>';
+                    listContainer.innerHTML = '<p class="text-xs text-gray-500 mono">No reviews found.</p>';
                     return;
                 }
 
                 querySnapshot.forEach((docSnap) => {
                     const rev = docSnap.data();
-                    const card = document.createElement('div');
-                    card.className = 'glass-card p-6 rounded-2xl space-y-2';
-                    card.innerHTML = `
-                        <div class="flex justify-between items-center">
-                            <h4 class="text-white font-semibold text-sm">${escapeHtml(rev.name)}</h4>
-                            <span class="text-yellow-400 text-xs">${rev.rating}</span>
+                    const id = docSnap.id;
+                    const item = document.createElement('div');
+                    item.className = 'p-5 rounded-2xl bg-[#030508] border border-gray-800 space-y-3';
+                    
+                    let replyHtml = rev.adminReply ? `
+                        <div class="mt-2 p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/30 text-xs space-y-1">
+                            <p class="text-cyan-400 font-semibold mono">↳ Official Reply by Arnav:</p>
+                            <p class="text-gray-300">"${escapeHtml(rev.adminReply)}"</p>
                         </div>
-                        <p class="text-gray-300 text-sm">"${escapeHtml(rev.text)}"</p>
-                        <p class="text-xs text-gray-500 mono">Verified Tester • Live Firestore Sync</p>
+                    ` : '';
+
+                    item.innerHTML = `
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-white font-bold">${escapeHtml(rev.name)}</span>
+                            <span class="text-yellow-400">${rev.rating}</span>
+                        </div>
+                        <p class="text-gray-300 text-xs">"${escapeHtml(rev.text)}"</p>
+                        ${replyHtml}
+                        <div class="pt-2 border-t border-gray-900 space-y-2">
+                            <div class="flex gap-2">
+                                <input type="text" id="replyInput_${id}" placeholder="Type developer reply..." value="${rev.adminReply || ''}" class="flex-grow px-3 py-2 rounded-xl bg-[#05070a] border border-gray-800 text-white text-xs focus:border-cyan-500 focus:outline-none mono">
+                                <button onclick="sendReply('${id}')" class="px-3 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs mono">Send</button>
+                            </div>
+                            <div class="flex justify-between items-center text-[10px] text-gray-500 mono pt-1">
+                                <span>ID: ${id.substring(0,6)}...</span>
+                                <button onclick="deleteReview('${id}')" class="text-red-400 hover:underline">Delete Review</button>
+                            </div>
+                        </div>
                     `;
-                    container.appendChild(card);
+                    listContainer.appendChild(item);
                 });
             } catch (e) {
-                container.innerHTML = '<p class="text-xs text-red-400 mono">Failed to load reviews.</p>';
+                listContainer.innerHTML = '<p class="text-xs text-red-400 mono">Failed to load reviews.</p>';
             }
         }
-        loadReviews();
+
+        window.sendReply = async function(id) {
+            const replyText = document.getElementById(`replyInput_${id}`).value;
+            try {
+                await updateDoc(doc(db, "reviews", id), {
+                    adminReply: replyText
+                });
+                alert("Reply saved successfully!");
+                loadAdminReviews();
+            } catch (e) {
+                alert("Error sending reply: " + e.message);
+            }
+        };
+
+        window.deleteReview = async function(id) {
+            if(confirm("Are you sure you want to delete this review?")) {
+                try {
+                    await deleteDoc(doc(db, "reviews", id));
+                    alert("Review deleted successfully!");
+                    loadAdminReviews();
+                } catch (e) {
+                    alert("Error deleting review: " + e.message);
+                }
+            }
+        };
 
         function escapeHtml(str) {
             return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
